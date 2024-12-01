@@ -1,13 +1,16 @@
-Greatings of the Day #connections ->
+# Project Title: Kaun Banega Crorepati (KBC) Game
 
-**Project Title: Kaun Banega Crorepati (KBC) Game**
+### Language: Python 
 
-**Description:**
+--- 
 
-**Overview:**
+### 👉 Overview:
+
 The Kaun Banega Crorepati (KBC) Game project in Python is a console-based implementation of the popular Indian television game show where participants answer a series of multiple-choice questions to win increasing amounts of money. The project is designed to provide an interactive and engaging experience for users, simulating the thrill of participating in the actual game show.
 
-**Features:**
+---
+
+### 👉 Features:
 
 1. **Question Bank:**
    - The project includes a diverse set of questions categorized into different difficulty levels and topics.
@@ -25,17 +28,29 @@ The Kaun Banega Crorepati (KBC) Game project in Python is a console-based implem
    - The game provides an intuitive and user-friendly interface through the console.
    - Players input their answers using the keyboard, and the system provides instant feedback on correctness.
 
-**Usage:**
+---
+
+### 👉 Usage:
 Players run the Python script to start the game. They navigate through the questions, use lifelines wisely, and aim to reach the highest prize amount. The console output guides players through the game, and correct answers lead to increased winnings.
 
-**Conclusion:**
+---
+
+### 👉 Conclusion:
 The Kaun Banega Crorepati Game project in Python provides an entertaining and interactive experience, allowing users to enjoy the excitement of the famous TV show within the console environment. It demonstrates the use of fundamental programming concepts and showcases the potential for creating engaging games with Python.
 
-**Limitations:**
+---
+
+### 👉 Limitations:
 - Participants can't choose to quit the game at any point.
 
-I try my best to make this game. So, Please play once, you will surely enjoyed the game.
+📌 I try my best to make this game. So, Please play once, you will surely enjoyed the game.
 
-Thankyou #connections
+---
 
-Have a Great Day Ahead
+### Visit:
+
+👉 `LinkedIn` - [Visit](https://linkedin.com/in/anshmnsoni)
+
+---
+
+### Thank You
