@@ -1,7 +1,7 @@
 # 🧠 Kaun Banega Crorepati (KBC) – Python GUI Version
 
-Welcome to the **KBC Game** built using Python!  
-This project is a fun and interactive version of the popular quiz game "**Kaun Banega Crorepati**" – now enhanced with a **Graphical User Interface (GUI)** using **Tkinter**, a **monochromatic theme**, and **50 curated questions** to challenge your knowledge!
+- Welcome to the **KBC Game** built using Python!  
+- This project is a fun and interactive version of the popular quiz game "**Kaun Banega Crorepati**" – now enhanced with a **Graphical User Interface (GUI)** using **Tkinter**, a **monochromatic theme**, and **50 curated questions** to challenge your knowledge!
 
 ---
 
@@ -9,8 +9,8 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 
 ### ✨ **Fully GUI-Based Game**  
 ➤ Built using Python's Tkinter library with a clean, modern interface.  
-➤ Intuitive layout and buttons for smooth interaction.
-➤ Responsive design tweaks
+➤ Intuitive layout and buttons for smooth interaction.<br/>
+➤ Responsive design tweaks.
 
 ### 🧠 **Expanded Question Bank**  
 ➤ 50 well-structured multiple-choice questions across various topics.
@@ -20,9 +20,9 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 
 ### 💡 **Interactive Gameplay**  
 ➤ Real-time feedback on correct/incorrect answers.  
-➤ Increasing prize money as you progress through the levels.
-➤ Sound effects and background music
-➤ Timer-based questions
+➤ Increasing prize money as you progress through the levels.<br/>
+➤ Sound effects and background music.<br/>
+➤ Timer-based questions.
 
 ---
 
@@ -54,7 +54,7 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 ![image](https://github.com/user-attachments/assets/2689d823-c91f-4e74-b925-35ba4f648ddf)
 
 ### Preview
-![image](https://github.com/user-attachments/assets/ae5ea595-6f8d-4c2a-9086-25e43edf9583)
+![image](https://github.com/user-attachments/assets/6f98319c-793b-4517-a8ad-d796a96a0b5a)
 
 ## 📚 Future Improvements
 - Additional lifelines (audience poll, phone-a-friend)
@@ -67,4 +67,12 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 ## 👤 Author
 ### Ansh Soni
 ##### 🚀 Tech Enthusiast | Python Developer | UI/UX Explorer
-### Connect: []()
+
+### 📞 Contact me
+#### 🔗LinkedIn: [Connect with me](https://www.linkedin.com/in/anshmnsoni)
+
+<hr/>
+
+### Just play once,
+### Enjoy the game! 🎮
+### Thank you 💫
