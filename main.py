@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, font
-import time
-import threading
+import pyttsx3
 import random
+import os
+import pygame
 from questions import get_questions
 
 class KBCGame:
@@ -11,6 +12,24 @@ class KBCGame:
         self.root.title("Kaun Banega Karodpati (KBC)")
         self.root.geometry("800x600")
         self.root.configure(bg="#1a1a1a")
+        
+        # Initialize pygame mixer for sounds
+        pygame.mixer.init()
+        
+        # Load sounds
+        self.sound_enabled = True
+        self.engine = pyttsx3.init()
+        self.engine.setProperty('rate', 150)
+        self.engine.setProperty('volume', 1.0)
+
+        # Initialize sounds as TTS messages
+        self.sounds = {}
+        self.load_sound("correct", "Sahi Jawab!")
+        self.load_sound("wrong", "Galat Jawab!")
+        self.load_sound("timer", "Time is running out!")
+        self.load_sound("lifeline", "Lifeline used.")
+        self.load_sound("applause", "Congratulations!")
+        self.load_sound("intro", "Welcome to KBC!")
         
         # Set monochromatic color scheme
         self.colors = {
@@ -23,7 +42,10 @@ class KBCGame:
             "button": "#4a4a4a",
             "button_hover": "#5a5a5a",
             "correct": "#a0a0a0",
-            "wrong": "#505050"
+            "wrong": "#505050",
+            "timer_normal": "#808080",
+            "timer_warning": "#a0a0a0",
+            "timer_danger": "#c0c0c0"
         }
         
         # Game variables
@@ -34,22 +56,251 @@ class KBCGame:
         self.timer_running = False
         self.timer_value = 0
         self.timer_thread = None
+        self.timer_id = None
+        self.sound_enabled = True
         
         # Get all questions and prepare game questions
         self.all_questions = get_questions()
         self.game_questions = []
         
         # Create custom fonts
-        self.title_font = font.Font(family="Helvetica", size=18, weight="bold")
-        self.question_font = font.Font(family="Helvetica", size=14, weight="bold")
-        self.option_font = font.Font(family="Helvetica", size=12)
-        self.info_font = font.Font(family="Helvetica", size=10)
+        self.update_fonts()
         
         # Create frames
         self.create_frames()
         
+        # Bind window resize event
+        self.root.bind("<Configure>", self.on_window_resize)
+        
         # Start with welcome screen
+        self.play_sound("intro")
         self.show_welcome_screen()
+    
+    def load_sound(self, sound_name, text):
+        """Store TTS text for a given sound name"""
+        self.sounds[sound_name] = text
+
+    
+    def play_sound(self, sound_name):
+        """Speak a sound phrase by name using pyttsx3"""
+        if not self.sound_enabled:
+            return
+
+        message = self.sounds.get(sound_name)
+        if message:
+            self.engine.say(message)
+            self.engine.runAndWait()
+
+    
+    def stop_sound(self, sound_name=None):
+        """Stop a specific sound or all sounds"""
+        if sound_name:
+            if sound_name == "background":
+                pygame.mixer.Channel(0).stop()
+            else:
+                pygame.mixer.Channel(1).stop()
+        else:
+            pygame.mixer.stop()
+    
+    def toggle_sound(self):
+        """Toggle sound on/off"""
+        self.sound_enabled = not self.sound_enabled
+        if not self.sound_enabled:
+            self.stop_sound()
+        
+        # Update sound button text
+        for widget in self.footer_frame.winfo_children():
+            if hasattr(widget, 'sound_button') and widget.sound_button:
+                widget.config(text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF")
+    
+    def update_fonts(self):
+        """Update fonts based on window size"""
+        # Get window dimensions
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        
+        # Base size on the smaller dimension
+        base_size = min(width, height) // 40
+        
+        # Ensure minimum sizes
+        title_size = max(12, base_size * 2)
+        question_size = max(10, int(base_size * 1.5))
+        option_size = max(8, base_size)
+        info_size = max(8, int(base_size * 0.8))
+        
+        # Create fonts
+        self.title_font = font.Font(family="Helvetica", size=title_size, weight="bold")
+        self.question_font = font.Font(family="Helvetica", size=question_size, weight="bold")
+        self.option_font = font.Font(family="Helvetica", size=option_size)
+        self.info_font = font.Font(family="Helvetica", size=info_size)
+        self.timer_font = font.Font(family="Helvetica", size=question_size * 2, weight="bold")
+    
+    def on_window_resize(self, event):
+        """Handle window resize event"""
+        # Only respond to root window resizing, not child widgets
+        if event.widget == self.root:
+            # Update fonts
+            self.update_fonts()
+            
+            # Update UI elements if needed
+            if hasattr(self, 'current_screen'):
+                if self.current_screen == "welcome":
+                    self.show_welcome_screen()
+                elif self.current_screen == "rules":
+                    self.show_rules_screen()
+                elif self.current_screen == "game":
+                    # Redisplay current question without resetting timer
+                    self.redisplay_current_question()
+    
+    def redisplay_current_question(self):
+        """Redisplay the current question without resetting the timer"""
+        # Save current timer value
+        current_timer = self.timer_value
+        
+        # Clear frames
+        for widget in self.header_frame.winfo_children():
+            widget.destroy()
+        for widget in self.question_frame.winfo_children():
+            widget.destroy()
+        for widget in self.options_frame.winfo_children():
+            widget.destroy()
+        for widget in self.lifelines_frame.winfo_children():
+            widget.destroy()
+        for widget in self.footer_frame.winfo_children():
+            widget.destroy()
+        
+        # Get current question data
+        q_data = self.game_questions[self.current_question]
+        
+        # Header - Question number and amount
+        question_num_label = tk.Label(
+            self.header_frame,
+            text=f"Question {self.current_question + 1} of ${q_data['value']}",
+            font=self.question_font,
+            bg=self.colors["bg_medium"],
+            fg=self.colors["text_highlight"]
+        )
+        question_num_label.pack(side=tk.LEFT, padx=10)
+        
+        amount_label = tk.Label(
+            self.header_frame,
+            text=f"Current: ${self.amount}",
+            font=self.question_font,
+            bg=self.colors["bg_medium"],
+            fg=self.colors["text_light"]
+        )
+        amount_label.pack(side=tk.RIGHT, padx=10)
+        
+        # Timer display
+        self.timer_canvas = tk.Canvas(
+            self.header_frame, 
+            width=60, 
+            height=60, 
+            bg=self.colors["bg_medium"],
+            highlightthickness=0
+        )
+        self.timer_canvas.pack(side=tk.RIGHT, padx=10)
+        
+        # Draw timer circle
+        self.timer_circle = self.timer_canvas.create_oval(5, 5, 55, 55, outline=self.colors["timer_normal"], width=3)
+        
+        # Timer text
+        self.timer_text = self.timer_canvas.create_text(30, 30, text=str(current_timer), fill=self.colors["text_highlight"], font=self.info_font)
+        
+        # Question
+        question_label = tk.Label(
+            self.question_frame,
+            text=q_data["question"],
+            font=self.question_font,
+            bg=self.colors["bg_light"],
+            fg=self.colors["text_highlight"],
+            wraplength=self.root.winfo_width() - 100,  # Responsive wrapping
+            justify=tk.CENTER,
+            pady=20
+        )
+        question_label.pack(fill=tk.BOTH, expand=True)
+        
+        # Options
+        option_letters = ['a', 'b', 'c', 'd']
+        self.option_buttons = []
+        
+        for i, option in enumerate(q_data["options"]):
+            option_frame = tk.Frame(self.options_frame, bg=self.colors["bg_medium"])
+            option_frame.pack(fill=tk.X, padx=20, pady=5)
+            
+            option_button = tk.Button(
+                option_frame,
+                text=f"{option_letters[i]}) {option}",
+                font=self.option_font,
+                bg=self.colors["button"],
+                fg=self.colors["text_light"],
+                activebackground=self.colors["button_hover"],
+                activeforeground=self.colors["text_highlight"],
+                relief=tk.RAISED,
+                width=50,
+                height=2,
+                anchor=tk.W,
+                padx=20,
+                command=lambda opt=option: self.check_answer(opt)
+            )
+            option_button.pack(fill=tk.X)
+            self.option_buttons.append(option_button)
+        
+        # Lifelines
+        lifeline_label = tk.Label(
+            self.lifelines_frame,
+            text="Lifelines:",
+            font=self.info_font,
+            bg=self.colors["bg_medium"],
+            fg=self.colors["text_light"]
+        )
+        lifeline_label.pack(side=tk.LEFT, padx=10)
+        
+        fifty_fifty_button = tk.Button(
+            self.lifelines_frame,
+            text="50:50",
+            font=self.info_font,
+            bg=self.colors["button"] if self.lifeline_1 == 0 else self.colors["bg_dark"],
+            fg=self.colors["text_light"],
+            state=tk.NORMAL if self.lifeline_1 == 0 else tk.DISABLED,
+            command=self.use_fifty_fifty
+        )
+        fifty_fifty_button.pack(side=tk.LEFT, padx=10)
+        
+        hint_button = tk.Button(
+            self.lifelines_frame,
+            text="Hint",
+            font=self.info_font,
+            bg=self.colors["button"] if self.lifeline_2 == 0 else self.colors["bg_dark"],
+            fg=self.colors["text_light"],
+            state=tk.NORMAL if self.lifeline_2 == 0 else tk.DISABLED,
+            command=self.use_hint
+        )
+        hint_button.pack(side=tk.LEFT, padx=10)
+        
+        # Sound toggle button
+        sound_button = tk.Button(
+            self.footer_frame,
+            text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF",
+            font=self.info_font,
+            bg=self.colors["button"],
+            fg=self.colors["text_light"],
+            command=self.toggle_sound
+        )
+        sound_button.sound_button = True  # Mark this as the sound button
+        sound_button.pack(side=tk.LEFT, padx=10, pady=5)
+        
+        # Warning for questions 6 and 7
+        if self.current_question >= 5:  # 0-indexed, so 5 is question 6
+            penalty = q_data.get("penalty", 0)
+            warning_label = tk.Label(
+                self.footer_frame,
+                text=f"Warning: Wrong answer will deduct ${penalty} from your winnings!",
+                font=self.info_font,
+                bg=self.colors["bg_medium"],
+                fg=self.colors["wrong"]
+            )
+            warning_label.pack(side=tk.RIGHT, pady=5, padx=10)
     
     def create_frames(self):
         # Main frame
@@ -133,8 +384,27 @@ class KBCGame:
         
         # Sort by value to ensure proper order
         self.game_questions.sort(key=lambda x: x["value"])
+        
+        # Add timer values based on difficulty
+        for i, q in enumerate(self.game_questions):
+            # Easier questions get more time
+            if i < 2:  # Questions 1-2
+                q["timer"] = 30
+            elif i < 4:  # Questions 3-4
+                q["timer"] = 25
+            elif i < 6:  # Questions 5-6
+                q["timer"] = 20
+            else:  # Question 7
+                q["timer"] = 15
     
     def show_welcome_screen(self):
+        self.current_screen = "welcome"
+        
+        # Stop any running timer
+        if self.timer_id:
+            self.root.after_cancel(self.timer_id)
+            self.timer_id = None
+        
         # Hide other frames
         self.rules_frame.pack_forget()
         self.game_frame.pack_forget()
@@ -195,8 +465,24 @@ class KBCGame:
             fg=self.colors["text_light"]
         )
         question_count_label.pack(pady=10)
+        
+        # Sound toggle button
+        sound_button = tk.Button(
+            self.welcome_frame,
+            text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF",
+            font=self.info_font,
+            bg=self.colors["button"],
+            fg=self.colors["text_light"],
+            command=self.toggle_sound
+        )
+        sound_button.pack(pady=10)
     
     def show_rules_screen(self):
+        self.current_screen = "rules"
+        
+        # Stop intro music and start background music
+        self.stop_sound("intro")
+        
         # Hide other frames
         self.welcome_frame.pack_forget()
         self.game_frame.pack_forget()
@@ -239,6 +525,8 @@ Please Read the Rules and Information carefully
 
 -> Total 7 Questions and 2 Lifelines
 -> Questions are randomly selected from a pool of over 50 unique questions
+-> Each question has a time limit! If time runs out, it counts as a wrong answer
+-> Easier questions have more time (30 seconds) while harder ones have less (15 seconds)
 -> To each Question their are 4 options
 -> Especially, In 6th and 7th question, for wrong answer $1000 and $2000 would be deducted respectively
 
@@ -269,8 +557,21 @@ Please Read the Rules and Information carefully
             command=self.start_game
         )
         start_button.pack(pady=20)
+        
+        # Sound toggle button
+        sound_button = tk.Button(
+            self.rules_frame,
+            text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF",
+            font=self.info_font,
+            bg=self.colors["button"],
+            fg=self.colors["text_light"],
+            command=self.toggle_sound
+        )
+        sound_button.pack(pady=10)
     
     def start_game(self):
+        self.current_screen = "game"
+        
         # Reset game variables
         self.amount = 0
         self.lifeline_1 = 0
@@ -314,7 +615,7 @@ Please Read the Rules and Information carefully
         countdown_label.pack(fill=tk.BOTH, expand=True)
         
         if seconds > 0:
-            self.root.after(1000, lambda: self.countdown_to_question(seconds - 1))
+            self.timer_id = self.root.after(1000, lambda: self.countdown_to_question(seconds - 1))
         else:
             self.display_question()
     
@@ -353,6 +654,22 @@ Please Read the Rules and Information carefully
         )
         amount_label.pack(side=tk.RIGHT, padx=10)
         
+        # Timer display
+        self.timer_canvas = tk.Canvas(
+            self.header_frame, 
+            width=60, 
+            height=60, 
+            bg=self.colors["bg_medium"],
+            highlightthickness=0
+        )
+        self.timer_canvas.pack(side=tk.RIGHT, padx=10)
+        
+        # Draw timer circle
+        self.timer_circle = self.timer_canvas.create_oval(5, 5, 55, 55, outline=self.colors["timer_normal"], width=3)
+        
+        # Timer text
+        self.timer_text = self.timer_canvas.create_text(30, 30, text=str(q_data["timer"]), fill=self.colors["text_highlight"], font=self.info_font)
+        
         # Question
         question_label = tk.Label(
             self.question_frame,
@@ -360,7 +677,7 @@ Please Read the Rules and Information carefully
             font=self.question_font,
             bg=self.colors["bg_light"],
             fg=self.colors["text_highlight"],
-            wraplength=700,
+            wraplength=self.root.winfo_width() - 100,  # Responsive wrapping
             justify=tk.CENTER,
             pady=20
         )
@@ -424,6 +741,18 @@ Please Read the Rules and Information carefully
         )
         hint_button.pack(side=tk.LEFT, padx=10)
         
+        # Sound toggle button
+        sound_button = tk.Button(
+            self.footer_frame,
+            text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF",
+            font=self.info_font,
+            bg=self.colors["button"],
+            fg=self.colors["text_light"],
+            command=self.toggle_sound
+        )
+        sound_button.sound_button = True  # Mark this as the sound button
+        sound_button.pack(side=tk.LEFT, padx=10, pady=5)
+        
         # Warning for questions 6 and 7
         if self.current_question >= 5:  # 0-indexed, so 5 is question 6
             penalty = q_data.get("penalty", 0)
@@ -434,12 +763,42 @@ Please Read the Rules and Information carefully
                 bg=self.colors["bg_medium"],
                 fg=self.colors["wrong"]
             )
-            warning_label.pack(pady=5)
+            warning_label.pack(side=tk.RIGHT, pady=5, padx=10)
+        
+        # Start the timer
+        self.timer_value = q_data["timer"]
+        self.start_timer()
+    
+    def start_timer(self):
+        """Start the question timer"""
+        if self.timer_value > 0:
+            # Update timer display
+            self.timer_canvas.itemconfig(self.timer_text, text=str(self.timer_value))
+            
+            # Update timer color based on remaining time
+            if self.timer_value <= 5:
+                self.timer_canvas.itemconfig(self.timer_circle, outline=self.colors["timer_danger"])
+                if self.timer_value <= 5 and self.sound_enabled:
+                    self.play_sound("timer")
+            elif self.timer_value <= 10:
+                self.timer_canvas.itemconfig(self.timer_circle, outline=self.colors["timer_warning"])
+            else:
+                self.timer_canvas.itemconfig(self.timer_circle, outline=self.colors["timer_normal"])
+            
+            # Decrement timer and schedule next update
+            self.timer_value -= 1
+            self.timer_id = self.root.after(1000, self.start_timer)
+        else:
+            # Time's up - count as wrong answer
+            self.stop_sound("timer")
+            self.play_sound("wrong")
+            self.show_wrong_answer(self.game_questions[self.current_question].get("penalty", 0))
     
     def use_fifty_fifty(self):
         if self.lifeline_1 == 1:
             return
         
+        self.play_sound("lifeline")
         self.lifeline_1 = 1
         
         # Get current question data
@@ -469,6 +828,7 @@ Please Read the Rules and Information carefully
         if self.lifeline_2 == 1:
             return
         
+        self.play_sound("lifeline")
         self.lifeline_2 = 1
         
         # Get current question data
@@ -484,6 +844,14 @@ Please Read the Rules and Information carefully
                 widget.config(bg=self.colors["bg_dark"], state=tk.DISABLED)
     
     def check_answer(self, selected_option):
+        # Cancel the timer
+        if self.timer_id:
+            self.root.after_cancel(self.timer_id)
+            self.timer_id = None
+        
+        # Stop timer sound if playing
+        self.stop_sound("timer")
+        
         # Get current question data
         q_data = self.game_questions[self.current_question]
         correct_option = q_data["correct"]
@@ -502,8 +870,10 @@ Please Read the Rules and Information carefully
         
         # Check if answer is correct
         if selected_option == correct_option:
+            self.play_sound("correct")
             self.show_correct_answer(q_data["value"])
         else:
+            self.play_sound("wrong")
             self.show_wrong_answer(q_data.get("penalty", 0))
     
     def show_correct_answer(self, value):
@@ -541,9 +911,10 @@ Please Read the Rules and Information carefully
             )
             next_label.pack(pady=5)
             
-            self.root.after(2000, lambda: self.countdown_to_question(5))
+            self.timer_id = self.root.after(2000, lambda: self.countdown_to_question(5))
         else:
-            self.show_game_over(True)
+            self.play_sound("applause")
+            self.timer_id = self.root.after(2000, lambda: self.show_game_over(True))
     
     def show_wrong_answer(self, penalty):
         # Update amount with penalty
@@ -570,7 +941,7 @@ Please Read the Rules and Information carefully
         amount_label.pack(pady=5)
         
         # End game
-        self.root.after(2000, lambda: self.show_game_over(False))
+        self.timer_id = self.root.after(2000, lambda: self.show_game_over(False))
     
     def show_game_over(self, completed):
         # Clear frames
@@ -641,6 +1012,17 @@ Please Read the Rules and Information carefully
             command=self.root.quit
         )
         exit_button.pack(side=tk.RIGHT, padx=20, pady=20)
+        
+        # Sound toggle button
+        sound_button = tk.Button(
+            self.footer_frame,
+            text="🔊 Sound: ON" if self.sound_enabled else "🔇 Sound: OFF",
+            font=self.info_font,
+            bg=self.colors["button"],
+            fg=self.colors["text_light"],
+            command=self.toggle_sound
+        )
+        sound_button.pack(side=tk.BOTTOM, pady=10)
 
 # Main function to run the application
 def main():
