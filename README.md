@@ -10,6 +10,7 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 ### ✨ **Fully GUI-Based Game**  
 ➤ Built using Python's Tkinter library with a clean, modern interface.  
 ➤ Intuitive layout and buttons for smooth interaction.
+➤ Responsive design tweaks
 
 ### 🧠 **Expanded Question Bank**  
 ➤ 50 well-structured multiple-choice questions across various topics.
@@ -20,6 +21,8 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 ### 💡 **Interactive Gameplay**  
 ➤ Real-time feedback on correct/incorrect answers.  
 ➤ Increasing prize money as you progress through the levels.
+➤ Sound effects and background music
+➤ Timer-based questions
 
 ---
 
@@ -54,8 +57,14 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 ![image](https://github.com/user-attachments/assets/ae5ea595-6f8d-4c2a-9086-25e43edf9583)
 
 ## 📚 Future Improvements
-- Add lifelines (50-50, audience poll, phone-a-friend)
+- Additional lifelines (audience poll, phone-a-friend)
 - Leaderboard system
-- Sound effects and background music
-- Timer-based questions
-- Responsive design tweaks
+
+## 🙌 Acknowledgments
+- Inspired by the iconic Indian TV show **Kaun Banega Crorepati** hosted by **Shri Amitabh Bachchan**.
+- Built as a fun and educational project to practice GUI development in Python.
+
+## 👤 Author
+### Ansh Soni
+##### 🚀 Tech Enthusiast | Python Developer | UI/UX Explorer
+### Connect: []()
