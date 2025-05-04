@@ -1,56 +1,41 @@
-# Project Title: Kaun Banega Crorepati (KBC) Game
+# 🧠 Kaun Banega Crorepati (KBC) – Python GUI Version
 
-### Language: Python 
-
---- 
-
-### 👉 Overview:
-
-The Kaun Banega Crorepati (KBC) Game project in Python is a console-based implementation of the popular Indian television game show where participants answer a series of multiple-choice questions to win increasing amounts of money. The project is designed to provide an interactive and engaging experience for users, simulating the thrill of participating in the actual game show.
+Welcome to the **KBC Game** built using Python!  
+This project is a fun and interactive version of the popular quiz game "**Kaun Banega Crorepati**" – now enhanced with a **Graphical User Interface (GUI)** using **Tkinter**, a **monochromatic theme**, and **50 curated questions** to challenge your knowledge!
 
 ---
 
-### 👉 Features:
+## 🎮 Features
 
-1. **Question Bank:**
-   - The project includes a diverse set of questions categorized into different difficulty levels and topics.
-   - Their are 7 Questions and each Question consist of 4 option.
+✨ **Fully GUI-Based Game**  
+➤ Built using Python's Tkinter library with a clean, modern interface.  
+➤ Intuitive layout and buttons for smooth interaction.
 
-2. **Lifelines:**
-   - Participants have access to lifelines, such as "50:50" and "Hint".
-   - Lifelines add strategic elements to the game, allowing players to seek assistance when faced with challenging questions.
+🧠 **Expanded Question Bank**  
+➤ 50 well-structured multiple-choice questions across various topics.
 
-3. **Scoring System:**
-   - The scoring system is implemented to track the player's progress and assign monetary values to each correct answer.
-   - Players accumulate winnings as they successfully answer questions.
+🎨 **Monochromatic UI Theme**  
+➤ Elegant and simple design to enhance focus and readability.
 
-4. **User Interaction:**
-   - The game provides an intuitive and user-friendly interface through the console.
-   - Players input their answers using the keyboard, and the system provides instant feedback on correctness.
-
----
-
-### 👉 Usage:
-Players run the Python script to start the game. They navigate through the questions, use lifelines wisely, and aim to reach the highest prize amount. The console output guides players through the game, and correct answers lead to increased winnings.
+💡 **Interactive Gameplay**  
+➤ Real-time feedback on correct/incorrect answers.  
+➤ Increasing prize money as you progress through the levels.  
+➤ Audio or visual feedback (if applicable).
 
 ---
 
-### 👉 Conclusion:
-The Kaun Banega Crorepati Game project in Python provides an entertaining and interactive experience, allowing users to enjoy the excitement of the famous TV show within the console environment. It demonstrates the use of fundamental programming concepts and showcases the potential for creating engaging games with Python.
+## 🛠️ Tech Stack
+
+- **Language**: Python 3.x  
+- **GUI Framework**: Tkinter  
+- **Theme**: Custom monochromatic color palette  
+- **Data Handling**: Questions loaded from a structured Python list or external file (JSON/CSV optional)
 
 ---
 
-### 👉 Limitations:
-- Participants can't choose to quit the game at any point.
+## 🚀 How to Run
 
-📌 I try my best to make this game. So, Please play once, you will surely enjoyed the game.
-
----
-
-### Visit:
-
-👉 `LinkedIn` - [Visit](https://linkedin.com/in/anshmnsoni)
-
----
-
-### Thank You
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/kbc-python-gui.git
+   cd kbc-python-gui
