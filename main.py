@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox, font
 import time
 import threading
+import random
+from questions import get_questions
 
 class KBCGame:
     def __init__(self, root):
@@ -33,60 +35,9 @@ class KBCGame:
         self.timer_value = 0
         self.timer_thread = None
         
-        # Questions and answers
-        self.questions = [
-            {
-                "question": "What is the capital city of France?",
-                "options": ["Berlin", "London", "Paris", "Madrid"],
-                "correct": "Paris",
-                "value": 1000,
-                "hint": "Where is eiffel tower located?"
-            },
-            {
-                "question": "Which planet is known as the 'Red Planet'?",
-                "options": ["Venus", "Mars", "Jupiter", "Saturn"],
-                "correct": "Mars",
-                "value": 2000,
-                "hint": "It is the fourth planet from the sun in our solar system!"
-            },
-            {
-                "question": "In which year did the Titanic sink?",
-                "options": ["1905", "1912", "1920", "1931"],
-                "correct": "1912",
-                "value": 3000,
-                "hint": "Republic Year of China!"
-            },
-            {
-                "question": "Who wrote the play 'Romeo and Juliet'?",
-                "options": ["William Wordsworth", "Charles Dickens", "William Shakespeare", "Jane Austen"],
-                "correct": "William Shakespeare",
-                "value": 4000,
-                "hint": "Often referred as the 'Bard of Avon'"
-            },
-            {
-                "question": "Which element has the chemical symbol 'W'?",
-                "options": ["Tungsten", "Vanedium", "Rutherfodium", "Antimony"],
-                "correct": "Tungsten",
-                "value": 5000,
-                "hint": "This element is known for its exceptional hardness and high melting point"
-            },
-            {
-                "question": "Name of Raja Dashratha's Mother is?",
-                "options": ["Rupwati", "Indumati", "Sumitra", "Kaushaliya"],
-                "correct": "Indumati",
-                "value": 6000,
-                "penalty": 1000,
-                "hint": "Sanskrit word associated with purity and beauty"
-            },
-            {
-                "question": "How many verses are their in 'Bhagavad Geeta?'",
-                "options": ["520", "600", "910", "700"],
-                "correct": "700",
-                "value": 7000,
-                "penalty": 2000,
-                "hint": "It is divisble by 100"
-            }
-        ]
+        # Get all questions and prepare game questions
+        self.all_questions = get_questions()
+        self.game_questions = []
         
         # Create custom fonts
         self.title_font = font.Font(family="Helvetica", size=18, weight="bold")
@@ -133,6 +84,55 @@ class KBCGame:
         # Footer frame (inside game frame)
         self.footer_frame = tk.Frame(self.game_frame, bg=self.colors["bg_medium"])
         self.footer_frame.pack(fill=tk.X, padx=10, pady=10)
+    
+    def prepare_game_questions(self):
+        """Prepare a set of 7 randomized questions with increasing difficulty"""
+        # Group questions by value
+        questions_by_value = {}
+        for q in self.all_questions:
+            value = q["value"]
+            if value not in questions_by_value:
+                questions_by_value[value] = []
+            questions_by_value[value].append(q)
+        
+        # Select questions for each value level
+        self.game_questions = []
+        
+        # First 5 questions (no penalty)
+        for value in [1000, 2000, 3000, 4000, 5000]:
+            if value in questions_by_value and questions_by_value[value]:
+                question = random.choice(questions_by_value[value])
+                self.game_questions.append(question)
+                questions_by_value[value].remove(question)
+            else:
+                # Fallback if we don't have enough questions at this value
+                fallback_question = random.choice(self.all_questions)
+                fallback_question["value"] = value
+                self.game_questions.append(fallback_question)
+        
+        # Last 2 questions (with penalty)
+        for value in [6000, 7000]:
+            penalty_questions = [q for q in self.all_questions if q.get("value") == value and "penalty" in q]
+            if penalty_questions:
+                question = random.choice(penalty_questions)
+                self.game_questions.append(question)
+            else:
+                # Fallback if we don't have enough penalty questions
+                fallback_question = random.choice([q for q in self.all_questions if q.get("value") >= 5000])
+                fallback_question["value"] = value
+                fallback_question["penalty"] = 1000 if value == 6000 else 2000
+                self.game_questions.append(fallback_question)
+        
+        # Ensure we have exactly 7 questions
+        while len(self.game_questions) < 7:
+            fallback_question = random.choice(self.all_questions)
+            self.game_questions.append(fallback_question)
+        
+        # Trim to 7 questions if we somehow have more
+        self.game_questions = self.game_questions[:7]
+        
+        # Sort by value to ensure proper order
+        self.game_questions.sort(key=lambda x: x["value"])
     
     def show_welcome_screen(self):
         # Hide other frames
@@ -185,6 +185,16 @@ class KBCGame:
             command=self.show_rules_screen
         )
         start_button.pack(pady=30)
+        
+        # Question count info
+        question_count_label = tk.Label(
+            self.welcome_frame,
+            text=f"Game includes {len(self.all_questions)} unique questions!",
+            font=self.info_font,
+            bg=self.colors["bg_medium"],
+            fg=self.colors["text_light"]
+        )
+        question_count_label.pack(pady=10)
     
     def show_rules_screen(self):
         # Hide other frames
@@ -228,6 +238,7 @@ Please Read the Rules and Information carefully
 :: Rules and Information ::
 
 -> Total 7 Questions and 2 Lifelines
+-> Questions are randomly selected from a pool of over 50 unique questions
 -> To each Question their are 4 options
 -> Especially, In 6th and 7th question, for wrong answer $1000 and $2000 would be deducted respectively
 
@@ -265,6 +276,9 @@ Please Read the Rules and Information carefully
         self.lifeline_1 = 0
         self.lifeline_2 = 0
         self.current_question = 0
+        
+        # Prepare random questions for this game
+        self.prepare_game_questions()
         
         # Hide other frames
         self.welcome_frame.pack_forget()
@@ -318,7 +332,7 @@ Please Read the Rules and Information carefully
             widget.destroy()
         
         # Get current question data
-        q_data = self.questions[self.current_question]
+        q_data = self.game_questions[self.current_question]
         
         # Header - Question number and amount
         question_num_label = tk.Label(
@@ -429,7 +443,7 @@ Please Read the Rules and Information carefully
         self.lifeline_1 = 1
         
         # Get current question data
-        q_data = self.questions[self.current_question]
+        q_data = self.game_questions[self.current_question]
         correct_option = q_data["correct"]
         
         # Find the correct option index
@@ -458,7 +472,7 @@ Please Read the Rules and Information carefully
         self.lifeline_2 = 1
         
         # Get current question data
-        q_data = self.questions[self.current_question]
+        q_data = self.game_questions[self.current_question]
         hint_text = q_data["hint"]
         
         # Show hint in a messagebox
@@ -471,7 +485,7 @@ Please Read the Rules and Information carefully
     
     def check_answer(self, selected_option):
         # Get current question data
-        q_data = self.questions[self.current_question]
+        q_data = self.game_questions[self.current_question]
         correct_option = q_data["correct"]
         
         # Disable all option buttons
@@ -517,7 +531,7 @@ Please Read the Rules and Information carefully
         
         # Move to next question or end game
         self.current_question += 1
-        if self.current_question < len(self.questions):
+        if self.current_question < len(self.game_questions):
             next_label = tk.Label(
                 self.footer_frame,
                 text="Next Question!",
