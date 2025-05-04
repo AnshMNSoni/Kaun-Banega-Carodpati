@@ -7,20 +7,19 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 
 ## 🎮 Features
 
-✨ **Fully GUI-Based Game**  
+### ✨ **Fully GUI-Based Game**  
 ➤ Built using Python's Tkinter library with a clean, modern interface.  
 ➤ Intuitive layout and buttons for smooth interaction.
 
-🧠 **Expanded Question Bank**  
+### 🧠 **Expanded Question Bank**  
 ➤ 50 well-structured multiple-choice questions across various topics.
 
-🎨 **Monochromatic UI Theme**  
+### 🎨 **Monochromatic UI Theme**  
 ➤ Elegant and simple design to enhance focus and readability.
 
-💡 **Interactive Gameplay**  
+### 💡 **Interactive Gameplay**  
 ➤ Real-time feedback on correct/incorrect answers.  
-➤ Increasing prize money as you progress through the levels.  
-➤ Audio or visual feedback (if applicable).
+➤ Increasing prize money as you progress through the levels.
 
 ---
 
@@ -38,4 +37,25 @@ This project is a fun and interactive version of the popular quiz game "**Kaun B
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/yourusername/kbc-python-gui.git
-   cd kbc-python-gui
+
+2. **In the terminal**:
+   ```sh
+   python kbc_game.py
+
+## 📸 Screenshots
+
+### Preview
+![image](https://github.com/user-attachments/assets/e63d4a37-5c78-43ac-a793-87cea068d9b1)
+
+### Preview
+![image](https://github.com/user-attachments/assets/2689d823-c91f-4e74-b925-35ba4f648ddf)
+
+### Preview
+![image](https://github.com/user-attachments/assets/ae5ea595-6f8d-4c2a-9086-25e43edf9583)
+
+## 📚 Future Improvements
+- Add lifelines (50-50, audience poll, phone-a-friend)
+- Leaderboard system
+- Sound effects and background music
+- Timer-based questions
+- Responsive design tweaks
